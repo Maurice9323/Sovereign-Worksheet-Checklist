@@ -1,0 +1,25 @@
+{
+  "name": "ALRPG \u2014 Worksheet Checklist",
+  "short_name": "Checklist",
+  "description": "Antihero Life RPG Worksheet Checklist \u2014 daily, weekly, monthly, quarterly tasks",
+  "start_url": "/Sovereign-Worksheet-Checklist/",
+  "scope": "/Sovereign-Worksheet-Checklist/",
+  "display": "standalone",
+  "background_color": "#080B18",
+  "theme_color": "#080B18",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/Sovereign-Worksheet-Checklist/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/Sovereign-Worksheet-Checklist/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
