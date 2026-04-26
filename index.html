@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Checklist">
+<meta name="theme-color" content="#080B18">
+<link rel="manifest" href="/Sovereign-Worksheet-Checklist/manifest.json">
+<link rel="apple-touch-icon" href="/Sovereign-Worksheet-Checklist/icon-192.png">
+<title>ALRPG — Worksheet Checklist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:    #080B18;
+  --bg2:   #0D1228;
+  --bg3:   #121830;
+  --bg4:   #192040;
+  --gold:        #E8C04A;
+  --gold-dim:    #8A7030;
+  --gold-bright: #F5D878;
+  --gold-fade:   rgba(232,192,74,.10);
+  --daily:       #5A9AAC;
+  --daily-fade:  rgba(90,154,172,.08);
+  --daily-dim:   rgba(90,154,172,.25);
+  --weekly:      #6A9A5C;
+  --weekly-fade: rgba(106,154,92,.08);
+  --weekly-dim:  rgba(106,154,92,.25);
+  --monthly:     #9A7ABC;
+  --monthly-fade:rgba(154,122,188,.08);
+  --monthly-dim: rgba(154,122,188,.25);
+  --quarterly:   #BC7A7A;
+  --quarterly-fade:rgba(188,122,122,.08);
+  --quarterly-dim: rgba(188,122,122,.25);
+  --text:        #DDD6C8;
+  --text-mid:    #888698;
+  --text-dim:    #383850;
+  --border:      #181C38;
+  --border-mid:  #222848;
+  --good:        #3DC870;
+  --good-dim:    #1A6040;
+  --red:         #C04040;
+  --red-lt:      #E08080;
+  --font-h: 'Playfair Display', serif;
+  --font-b: 'Source Serif 4', serif;
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sat: env(safe-area-inset-top, 0px);
+  --r: 6px;
+  --r2: 4px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-text-size-adjust: 100%; overscroll-behavior: none; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-b);
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(20px + var(--sab));
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,.06) 3px, rgba(0,0,0,.06) 4px);
+  pointer-events: none; z-index: 1;
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, transparent 40%, rgba(0,0,0,.55) 100%);
+  pointer-events: none; z-index: 2;
+}
+#app {
+  position: relative; z-index: 10;
+  max-width: 800px; margin: 0 auto;
+  padding: 0 14px 24px;
+}
+
+/* ── LOADING ── */
+#loading-overlay {
+  position: fixed; inset: 0; background: var(--bg); z-index: 9999;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+}
+.lo-spinner { width: 30px; height: 30px; border: 2px solid var(--border-mid); border-top-color: var(--gold); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.lo-title { font-family: var(--font-h); font-size: 1rem; color: var(--gold); letter-spacing: .14em; }
+.lo-sub   { font-size: .6rem; color: var(--text-dim); letter-spacing: .2em; text-transform: uppercase; }
+
+/* ── HEADER ── */
+.hdr {
+  padding: 12px 0 10px;
+  border-bottom: 1px solid var(--border-mid);
+  margin-bottom: 10px;
+  display: flex; justify-content: space-between; align-items: flex-end;
+}
+.hdr-left { }
+.hdr-sys   { font-family: var(--font-h); font-size: .42rem; letter-spacing: .4em; color: var(--gold-dim); text-transform: uppercase; margin-bottom: 3px; }
+.hdr-title { font-family: var(--font-h); font-size: 1.15rem; font-weight: 700; color: var(--gold); letter-spacing: .04em; line-height: 1; }
+.hdr-right { text-align: right; }
+.hdr-date  { font-size: .52rem; color: var(--text-dim); letter-spacing: .08em; margin-bottom: 3px; }
+.hdr-total { font-family: var(--font-h); font-size: .72rem; color: var(--gold); font-weight: 700; }
+#sync-pill {
+  font-size: .42rem; letter-spacing: .16em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: var(--r2);
+  border: 1px solid var(--border-mid); color: var(--text-dim);
+  transition: color .3s, border-color .3s; display: inline-block; margin-top: 4px;
+}
+
+/* ── RESET BAR ── */
+.reset-bar {
+  display: flex; flex-wrap: wrap; gap: 7px;
+  padding: 8px 12px; background: var(--bg2);
+  border: 1px solid var(--border-mid); border-radius: var(--r2);
+  margin-bottom: 12px;
+}
+.rb-item { display: flex; align-items: center; gap: 5px; font-size: .5rem; color: var(--text-dim); letter-spacing: .06em; }
+.rb-dot  { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── SECTION ── */
+.section { margin-bottom: 8px; border: 1px solid var(--border-mid); border-radius: var(--r); overflow: hidden; }
+
+.sec-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 14px; cursor: pointer; user-select: none;
+  min-height: 54px; -webkit-tap-highlight-color: transparent;
+  transition: background .15s;
+}
+.sec-hdr:active { background: rgba(255,255,255,.02); }
+
+.sec-hdr-left  { display: flex; align-items: center; gap: 10px; }
+.sec-hdr-right { display: flex; align-items: center; gap: 8px; }
+
+.sec-icon { width: 32px; height: 32px; border-radius: var(--r2); display: flex; align-items: center; justify-content: center; font-size: .9rem; flex-shrink: 0; }
+
+.sec-title { font-family: var(--font-h); font-size: .88rem; font-weight: 700; line-height: 1.2; }
+.sec-sub   { font-size: .48rem; letter-spacing: .1em; text-transform: uppercase; opacity: .65; margin-top: 2px; }
+
+.sec-pill {
+  font-size: .52rem; font-weight: 700; padding: 3px 10px;
+  border-radius: 10px; letter-spacing: .04em; white-space: nowrap;
+}
+.sec-chevron { font-size: .7rem; color: var(--text-dim); transition: transform .3s ease; flex-shrink: 0; }
+.section.open .sec-chevron { transform: rotate(180deg); }
+
+/* Daily theme */
+.section.daily .sec-hdr { background: linear-gradient(90deg, rgba(90,154,172,.07), transparent); border-bottom: 1px solid var(--border-mid); }
+.section.daily .sec-icon { background: rgba(90,154,172,.12); color: var(--daily); }
+.section.daily .sec-title { color: var(--daily); }
+.section.daily .sec-sub   { color: var(--daily); }
+.section.daily .sec-pill  { background: rgba(90,154,172,.12); color: var(--daily); }
+.section.daily.all-done .sec-hdr { background: linear-gradient(90deg, rgba(90,154,172,.16), transparent); }
+
+/* Weekly theme */
+.section.weekly .sec-hdr { background: linear-gradient(90deg, rgba(106,154,92,.07), transparent); border-bottom: 1px solid var(--border-mid); }
+.section.weekly .sec-icon { background: rgba(106,154,92,.12); color: var(--weekly); }
+.section.weekly .sec-title { color: var(--weekly); }
+.section.weekly .sec-sub   { color: var(--weekly); }
+.section.weekly .sec-pill  { background: rgba(106,154,92,.12); color: var(--weekly); }
+.section.weekly.all-done .sec-hdr { background: linear-gradient(90deg, rgba(106,154,92,.16), transparent); }
+
+/* Monthly theme */
+.section.monthly .sec-hdr { background: linear-gradient(90deg, rgba(154,122,188,.07), transparent); border-bottom: 1px solid var(--border-mid); }
+.section.monthly .sec-icon { background: rgba(154,122,188,.12); color: var(--monthly); }
+.section.monthly .sec-title { color: var(--monthly); }
+.section.monthly .sec-sub   { color: var(--monthly); }
+.section.monthly .sec-pill  { background: rgba(154,122,188,.12); color: var(--monthly); }
+.section.monthly.all-done .sec-hdr { background: linear-gradient(90deg, rgba(154,122,188,.16), transparent); }
+
+/* Quarterly theme */
+.section.quarterly .sec-hdr { background: linear-gradient(90deg, rgba(188,122,122,.07), transparent); border-bottom: 1px solid var(--border-mid); }
+.section.quarterly .sec-icon { background: rgba(188,122,122,.12); color: var(--quarterly); }
+.section.quarterly .sec-title { color: var(--quarterly); }
+.section.quarterly .sec-sub   { color: var(--quarterly); }
+.section.quarterly .sec-pill  { background: rgba(188,122,122,.12); color: var(--quarterly); }
+.section.quarterly.all-done .sec-hdr { background: linear-gradient(90deg, rgba(188,122,122,.16), transparent); }
+
+/* Completed section */
+.section.all-done { border-color: rgba(61,200,112,.2); }
+.section.all-done .sec-pill::before { content: '✓ '; }
+
+/* ── ITEMS CONTAINER ── */
+.sec-body { overflow: hidden; max-height: 0; transition: max-height .38s cubic-bezier(.4,0,.2,1); }
+.section.open .sec-body { max-height: 2400px; }
+
+/* ── ITEM ── */
+.item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 13px 14px; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background .15s; user-select: none;
+  min-height: 56px; -webkit-tap-highlight-color: transparent;
+}
+.item:last-child { border-bottom: none; }
+.item:active { background: rgba(255,255,255,.015); }
+.item.done { opacity: .42; }
+.item.done .item-name { text-decoration: line-through; text-decoration-color: var(--text-dim); }
+
+/* Checkbox */
+.cb {
+  width: 22px; height: 22px; border: 1.5px solid; border-radius: 4px;
+  flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center;
+  transition: all .2s; position: relative;
+}
+.cb svg { opacity: 0; transform: scale(.5); transition: all .2s; }
+.item.done .cb { border-color: currentColor; }
+.item.done .cb svg { opacity: 1; transform: scale(1); }
+
+/* Daily cb */
+.daily .cb  { color: var(--daily);   border-color: rgba(90,154,172,.4);  }
+.weekly .cb { color: var(--weekly);  border-color: rgba(106,154,92,.4); }
+.monthly .cb{ color: var(--monthly); border-color: rgba(154,122,188,.4);}
+.quarterly .cb{color:var(--quarterly);border-color:rgba(188,122,122,.4);}
+.item.done.daily .cb    { background: rgba(90,154,172,.2); }
+.item.done.weekly .cb   { background: rgba(106,154,92,.2); }
+.item.done.monthly .cb  { background: rgba(154,122,188,.2); }
+.item.done.quarterly .cb{ background: rgba(188,122,122,.2); }
+
+/* Item content */
+.item-body { flex: 1; min-width: 0; }
+.item-top  { display: flex; align-items: baseline; gap: 7px; margin-bottom: 3px; flex-wrap: wrap; }
+.item-name { font-size: .82rem; font-weight: 600; color: var(--text); line-height: 1.35; }
+.item-file { font-size: .58rem; color: var(--text-dim); font-style: italic; }
+.item-time {
+  font-size: .5rem; font-weight: 600; letter-spacing: .04em;
+  padding: 2px 7px; border-radius: 3px; white-space: nowrap; margin-left: auto; flex-shrink: 0;
+}
+.daily    .item-time { background: rgba(90,154,172,.1);  color: var(--daily); }
+.weekly   .item-time { background: rgba(106,154,92,.1); color: var(--weekly); }
+.monthly  .item-time { background: rgba(154,122,188,.1);color: var(--monthly); }
+.quarterly .item-time{ background: rgba(188,122,122,.1);color: var(--quarterly); }
+.item-note { font-size: .68rem; color: var(--text-mid); line-height: 1.55; margin-top: 3px; }
+
+/* ── QUARTERLY RESET ── */
+.quarterly-reset-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; background: rgba(188,122,122,.06);
+  border-top: 1px solid var(--border);
+}
+.qr-txt { font-size: .58rem; color: var(--text-dim); line-height: 1.5; }
+.qr-txt strong { color: var(--quarterly); }
+.qr-btn {
+  padding: 7px 12px; background: transparent; border: 1px solid var(--quarterly);
+  color: var(--quarterly); font-family: var(--font-b); font-size: .56rem;
+  letter-spacing: .1em; text-transform: uppercase; cursor: pointer;
+  border-radius: var(--r2); transition: all .2s; min-height: 36px;
+  white-space: nowrap; flex-shrink: 0; margin-left: 10px;
+  -webkit-tap-highlight-color: transparent;
+}
+.qr-btn:active { background: rgba(188,122,122,.12); }
+
+/* ── FOOTER ── */
+.footer {
+  margin-top: 14px; padding-top: 10px;
+  border-top: 1px solid var(--border-mid);
+  display: flex; justify-content: space-between;
+  font-size: .52rem; color: var(--text-dim); font-style: italic;
+}
+.footer strong { color: var(--gold); font-style: normal; }
+
+/* ── NOTIFICATION ── */
+.notif {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  background: var(--bg2); border: 1px solid var(--gold);
+  padding: 18px 26px; text-align: center; z-index: 9998;
+  box-shadow: 0 0 55px rgba(232,192,74,.2);
+  animation: popIn .38s cubic-bezier(.34,1.56,.64,1) forwards;
+  pointer-events: none; border-radius: var(--r);
+}
+@keyframes popIn { from{opacity:0;transform:translate(-50%,-50%) scale(.72)} to{opacity:1;transform:translate(-50%,-50%) scale(1)} }
+.notif.out { animation: popOut .38s ease forwards; }
+@keyframes popOut { from{opacity:1;transform:translate(-50%,-50%) scale(1)} to{opacity:0;transform:translate(-50%,-50%) scale(.86)} }
+.notif-main { font-family: var(--font-h); font-size: 1.1rem; color: var(--gold); margin-bottom: 4px; }
+.notif-sub  { font-size: .64rem; color: var(--text-dim); }
+
+/* ── DESKTOP ── */
+@media (min-width: 768px) {
+  #app { padding: 12px 20px 30px; }
+  .hdr-title { font-size: 1.4rem; }
+  .section.open .sec-body { max-height: 3600px; }
+}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div id="loading-overlay">
+  <div class="lo-spinner"></div>
+  <div class="lo-title">SOVEREIGN</div>
+  <div class="lo-sub" id="lo-sub">Loading…</div>
+</div>
+
+<div id="app">
+
+  <div class="hdr">
+    <div class="hdr-left">
+      <div class="hdr-sys">Antihero Life RPG System</div>
+      <div class="hdr-title">Worksheet Checklist</div>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-date" id="hdr-date"></div>
+      <div class="hdr-total" id="hdr-total">0 / 22</div>
+      <span id="sync-pill">⟳ Loading</span>
+    </div>
+  </div>
+
+  <div class="reset-bar">
+    <div class="rb-item"><div class="rb-dot" style="background:var(--daily)"></div>Daily resets at midnight</div>
+    <div class="rb-item"><div class="rb-dot" style="background:var(--weekly)"></div>Weekly resets Monday</div>
+    <div class="rb-item"><div class="rb-dot" style="background:var(--monthly)"></div>Monthly resets 1st</div>
+    <div class="rb-item"><div class="rb-dot" style="background:var(--quarterly)"></div>Quarterly resets manually</div>
+  </div>
+
+  <!-- DAILY -->
+  <div class="section daily" id="sec-daily">
+    <div class="sec-hdr" data-sec="daily">
+      <div class="sec-hdr-left">
+        <div class="sec-icon">📋</div>
+        <div>
+          <div class="sec-title">Daily</div>
+          <div class="sec-sub">Every day · ~13 min total</div>
+        </div>
+      </div>
+      <div class="sec-hdr-right">
+        <span class="sec-pill" id="pill-daily">0 / 4</span>
+        <span class="sec-chevron">▾</span>
+      </div>
+    </div>
+    <div class="sec-body" id="body-daily">
+      <div class="item daily" data-id="d1" data-cadence="daily">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">Morning Check-In</span>
+            <span class="item-file">Daily Check-In.xlsx</span>
+            <span class="item-time">3 min</span>
+          </div>
+          <div class="item-note">State scan, energy, sleep quality, top 3 priorities, risk forecast. Do this before your phone.</div>
+        </div>
+      </div>
+      <div class="item daily" data-id="d2" data-cadence="daily">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">Log Actions Throughout Day</span>
+            <span class="item-file">Daily Action Log.html</span>
+            <span class="item-time">Ongoing</span>
+          </div>
+          <div class="item-note">Log every qualifying action as it happens. Stat, action, XP. Don't wait until evening.</div>
+        </div>
+      </div>
+      <div class="item daily" data-id="d3" data-cadence="daily">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">Log Daily XP</span>
+            <span class="item-file">Daily XP Tracker.xlsx</span>
+            <span class="item-time">5 min</span>
+          </div>
+          <div class="item-note">Transfer totals from Action Log. One entry per stat. Check for streaks. Do before clearing the log.</div>
+        </div>
+      </div>
+      <div class="item daily" data-id="d4" data-cadence="daily">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">Night Check-In</span>
+            <span class="item-file">Daily Check-In.xlsx</span>
+            <span class="item-time">5 min</span>
+          </div>
+          <div class="item-note">Evening reflection, wins, failures, tomorrow's anchor. Did you complete your Day Rule? Any METTLE events?</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEKLY -->
+  <div class="section weekly" id="sec-weekly">
+    <div class="sec-hdr" data-sec="weekly">
+      <div class="sec-hdr-left">
+        <div class="sec-icon">📊</div>
+        <div>
+          <div class="sec-title">Weekly</div>
+          <div class="sec-sub">Same day every week · ~48 min</div>
+        </div>
+      </div>
+      <div class="sec-hdr-right">
+        <span class="sec-pill" id="pill-weekly">0 / 6</span>
+        <span class="sec-chevron">▾</span>
+      </div>
+    </div>
+    <div class="sec-body" id="body-weekly">
+      <div class="item weekly" data-id="w1" data-cadence="weekly">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">Score All 41 Stats</span>
+            <span class="item-file">Weekly XP Tracker.xlsx</span>
+            <span class="item-time">10 min</span>
+          </div>
+          <div class="item-note">Score 0–10 for every stat. Be honest. Check: can you name a specific action behind any score above 7?</div>
+        </div>
+      </div>
+      <div class="item weekly" data-id="w2" data-cadence="weekly">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">Update Core Stats Dashboard</span>
+            <span class="item-file">Core Stats Dashboard.xlsx</span>
+            <span class="item-time">5 min</span>
+          </div>
+          <div class="item-note">Enter stat scores. Check track percentages and Red Zone flags. Review XP Milestones tab for any M1/M2/M3 crossings.</div>
+        </div>
+      </div>
+      <div class="item weekly" data-id="w3" data-cadence="weekly">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">Weekly Audit</span>
+            <span class="item-file">Weekly Audit.xlsx</span>
+            <span class="item-time">15 min</span>
+          </div>
+          <div class="item-note">Wins, failures, patterns. Score calibration check. Any Red Zone drift? Mode still accurate? Log any METTLE events.</div>
+        </div>
+      </div>
+      <div class="item weekly" data-id="w4" data-cadence="weekly">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">Log Weekly XP Totals</span>
+            <span class="item-file">Weekly XP Tracker.xlsx</span>
+            <span class="item-time">5 min</span>
+          </div>
+          <div class="item-note">Sum daily XP per stat for the week. Check for 7-day streaks (+3 XP bonus). Log weekly quest completions (+5 XP each).</div>
+        </div>
+      </div>
+      <div class="item weekly" data-id="w5" data-cadence="weekly">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">METTLE Autopsy (if needed)</span>
+            <span class="item-file">METTLE Autopsy Worksheet.docx</span>
+            <span class="item-time">15 min</span>
+          </div>
+          <div class="item-note">Complete one per failure event this week. All 5 steps written. No writing = no METTLE.</div>
+        </div>
+      </div>
+      <div class="item weekly" data-id="w6" data-cadence="weekly">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">Log to METTLE Ledger (if needed)</span>
+            <span class="item-file">METTLE Ledger.xlsx</span>
+            <span class="item-time">3 min</span>
+          </div>
+          <div class="item-note">One row per autopsy completed this week. Date, event, XP earned, steps completed. After the autopsy, not instead of it.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MONTHLY -->
+  <div class="section monthly" id="sec-monthly">
+    <div class="sec-hdr" data-sec="monthly">
+      <div class="sec-hdr-left">
+        <div class="sec-icon">📅</div>
+        <div>
+          <div class="sec-title">Monthly</div>
+          <div class="sec-sub">1st of each month · ~60 min</div>
+        </div>
+      </div>
+      <div class="sec-hdr-right">
+        <span class="sec-pill" id="pill-monthly">0 / 5</span>
+        <span class="sec-chevron">▾</span>
+      </div>
+    </div>
+    <div class="sec-body" id="body-monthly">
+      <div class="item monthly" data-id="m1" data-cadence="monthly">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">Monthly XP Totals</span>
+            <span class="item-file">Monthly XP Tracker.xlsx</span>
+            <span class="item-time">10 min</span>
+          </div>
+          <div class="item-note">Sum all weekly XP for the month per stat. Check 30-day streak bonuses (+10 XP). Note top and bottom performing stats.</div>
+        </div>
+      </div>
+      <div class="item monthly" data-id="m2" data-cadence="monthly">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">Monthly Audit</span>
+            <span class="item-file">Monthly Audit.xlsx</span>
+            <span class="item-time">20 min</span>
+          </div>
+          <div class="item-note">Pattern review across 4 weeks. Did behavior match scores? Red Zone proximity check. Mode performance — was it the right call?</div>
+        </div>
+      </div>
+      <div class="item monthly" data-id="m3" data-cadence="monthly">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">Financial Tracker</span>
+            <span class="item-file">Financial Tracker.xlsx</span>
+            <span class="item-time">15 min</span>
+          </div>
+          <div class="item-note">Complete the current month tab. Score Provider Capacity. Copy final score to Core Stats Dashboard before closing.</div>
+        </div>
+      </div>
+      <div class="item monthly" data-id="m4" data-cadence="monthly">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">Update Power Map</span>
+            <span class="item-file">Power Map Template.xlsx</span>
+            <span class="item-time">10 min</span>
+          </div>
+          <div class="item-note">Any new players, power shifts, or threat changes this month? Log updates across all three environment tabs.</div>
+        </div>
+      </div>
+      <div class="item monthly" data-id="m5" data-cadence="monthly">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">Check XP Milestones</span>
+            <span class="item-file">Core Stats Dashboard.xlsx · XP Milestones tab</span>
+            <span class="item-time">5 min</span>
+          </div>
+          <div class="item-note">Did any stat cross M1 (100), M2 (300), or M3 (750) this month? Note upgrades to activate next arc.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUARTERLY -->
+  <div class="section quarterly" id="sec-quarterly">
+    <div class="sec-hdr" data-sec="quarterly">
+      <div class="sec-hdr-left">
+        <div class="sec-icon">⚔️</div>
+        <div>
+          <div class="sec-title">Quarterly / Arc</div>
+          <div class="sec-sub">Arc close + open · ~3 hrs total</div>
+        </div>
+      </div>
+      <div class="sec-hdr-right">
+        <span class="sec-pill" id="pill-quarterly">0 / 7</span>
+        <span class="sec-chevron">▾</span>
+      </div>
+    </div>
+    <div class="sec-body" id="body-quarterly">
+      <div class="item quarterly" data-id="q1" data-cadence="quarterly">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">Run Arc Transition Checklist</span>
+            <span class="item-file">Arc Transition Checklist.html</span>
+            <span class="item-time">3 days</span>
+          </div>
+          <div class="item-note">All 23 steps across Phase A (close), Phase B (gap + rest), Phase C (open). Do not skip the gap day.</div>
+        </div>
+      </div>
+      <div class="item quarterly" data-id="q2" data-cadence="quarterly">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">Arc Planning Template</span>
+            <span class="item-file">Arc Planning Template.xlsx</span>
+            <span class="item-time">45 min</span>
+          </div>
+          <div class="item-note">All 9 sections. Mission, track targets, Focus Stats, mode, Victory Condition, risk register, baselines. Don't open the arc without this complete.</div>
+        </div>
+      </div>
+      <div class="item quarterly" data-id="q3" data-cadence="quarterly">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">Quarterly Tracker</span>
+            <span class="item-file">Quarterly Tracker.xlsx</span>
+            <span class="item-time">20 min</span>
+          </div>
+          <div class="item-note">Close the arc: mode used, victory status, XP total, METTLE count, written debrief (3 sentences minimum).</div>
+        </div>
+      </div>
+      <div class="item quarterly" data-id="q4" data-cadence="quarterly">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">Annual Review Update</span>
+            <span class="item-file">Annual Review.xlsx</span>
+            <span class="item-time">20 min</span>
+          </div>
+          <div class="item-note">Log arc data in Arc Breakdown tab. Update Full Stat Ledger for the arc months. Check for year-end patterns emerging.</div>
+        </div>
+      </div>
+      <div class="item quarterly" data-id="q5" data-cadence="quarterly">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">Skill Tree Tracker</span>
+            <span class="item-file">Skill Tree Tracker.xlsx</span>
+            <span class="item-time">10 min</span>
+          </div>
+          <div class="item-note">Update METTLE total. Check if any skill tree tier unlocked this arc. Note which trees are closest to next tier.</div>
+        </div>
+      </div>
+      <div class="item quarterly" data-id="q6" data-cadence="quarterly">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">90-Day Deployment Calendar</span>
+            <span class="item-file">90-Day Deployment Calendar.xlsx</span>
+            <span class="item-time">15 min</span>
+          </div>
+          <div class="item-note">Reset for new arc. Enter arc dates, mode, act breaks. Mark Day 1 anchor plan. No improvising on Day 1.</div>
+        </div>
+      </div>
+      <div class="item quarterly" data-id="q7" data-cadence="quarterly">
+        <div class="cb"><svg width="11" height="11" viewBox="0 0 11 11"><polyline points="1.5,5.5 4.5,8.5 9.5,2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="item-body">
+          <div class="item-top">
+            <span class="item-name">Operator Notes Review</span>
+            <span class="item-file">Operator Notes.html</span>
+            <span class="item-time">5 min</span>
+          </div>
+          <div class="item-note">Read once at arc close. Which blind spot showed up this arc? Be honest before opening the next one.</div>
+        </div>
+      </div>
+
+      <!-- Manual reset bar -->
+      <div class="quarterly-reset-bar">
+        <div class="qr-txt"><strong>Quarterly items reset manually.</strong> Tap when starting a new arc.</div>
+        <button class="qr-btn" id="qr-reset-btn">Reset Arc</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>Antihero Life RPG System · Worksheet Checklist</span>
+    <span>Resets auto · <strong>22 items total</strong></span>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+// ═══════════════════════════════════════════════════════
+// FIREBASE CONFIG
+// ═══════════════════════════════════════════════════════
+const FB_CFG = {
+  apiKey: "AIzaSyCWgmq19tMNS6-h8Bdp-rR80UKRrYG2yzQ",
+  authDomain: "alrpg-13e47.firebaseapp.com",
+  projectId: "alrpg-13e47",
+  storageBucket: "alrpg-13e47.firebasestorage.app",
+  messagingSenderId: "758497858726",
+  appId: "1:758497858726:web:af8349d3eb78349b641067"
+};
+const FS_DOC = 'alrpg/checklist';
+
+// ═══════════════════════════════════════════════════════
+// FIREBASE — dynamic load with localStorage fallback
+// ═══════════════════════════════════════════════════════
+let db = null;
+let fbReady = false;
+let _lastWrite = 0;
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src; s.async = true;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error('Failed: ' + src));
+    document.head.appendChild(s);
+  });
+}
+
+async function initFirebase() {
+  try {
+    setSync('syncing');
+    await loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
+    await loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js');
+    if (!window.firebase) throw new Error('firebase not found');
+    if (!window.firebase.apps || !window.firebase.apps.length) {
+      window.firebase.initializeApp(FB_CFG);
+    }
+    db = window.firebase.firestore();
+    fbReady = true;
+    setSync('synced');
+    return true;
+  } catch (e) {
+    console.warn('Firebase unavailable, running offline:', e.message);
+    setSync('offline');
+    return false;
+  }
+}
+
+function setSync(s) {
+  const el = document.getElementById('sync-pill');
+  if (!el) return;
+  if (s === 'syncing') { el.textContent = '↑ Syncing'; el.style.color = 'var(--gold-dim)'; el.style.borderColor = 'var(--gold-dim)'; }
+  else if (s === 'synced') { el.textContent = '✓ Synced'; el.style.color = 'var(--good)'; el.style.borderColor = 'var(--good-dim)'; }
+  else { el.textContent = '● Offline'; el.style.color = 'var(--text-dim)'; el.style.borderColor = 'var(--border-mid)'; }
+}
+
+async function fsSave(data) {
+  if (!fbReady || !db) return;
+  _lastWrite = Date.now();
+  setSync('syncing');
+  try {
+    await db.doc(FS_DOC).set(data, { merge: true });
+    setSync('synced');
+  } catch (e) {
+    console.warn('Firestore write error:', e.message);
+    setSync('offline');
+  }
+}
+
+function subscribeDoc() {
+  if (!fbReady || !db) return;
+  try {
+    db.doc(FS_DOC).onSnapshot(snap => {
+      try {
+        if (!snap || !snap.exists) return;
+        if (Date.now() - _lastWrite < 3000) return;
+        const data = snap.data();
+        if (!data) return;
+        applyRemote(data);
+        renderAll();
+        setSync('synced');
+      } catch (e) { console.warn('onSnapshot cb error:', e.message); }
+    }, e => { console.warn('onSnapshot error:', e.message); setSync('offline'); });
+  } catch (e) { console.warn('subscribeDoc error:', e.message); }
+}
+
+// ═══════════════════════════════════════════════════════
+// RESET KEYS
+// ═══════════════════════════════════════════════════════
+function resetKey(cadence) {
+  const n = new Date();
+  if (cadence === 'daily') return 'daily_' + n.toISOString().slice(0, 10);
+  if (cadence === 'weekly') {
+    const day = n.getDay();
+    const diff = n.getDate() - day + (day === 0 ? -6 : 1);
+    const mon = new Date(n); mon.setDate(diff);
+    return 'weekly_' + mon.toISOString().slice(0, 10);
+  }
+  if (cadence === 'monthly') return 'monthly_' + n.getFullYear() + '_' + (n.getMonth() + 1);
+  if (cadence === 'quarterly') return localStorage.getItem('alrpg_cl_q_key') || 'quarterly_arc_1';
+  return cadence;
+}
+
+// ═══════════════════════════════════════════════════════
+// STATE — keyed object stored flat in Firestore
+// ═══════════════════════════════════════════════════════
+// State lives in localStorage AND Firestore.
+// Each item's checked state is stored as:
+//   state[resetKey(cadence)][itemId] = true
+let state = {};
+
+function lsLoad() {
+  try { state = JSON.parse(localStorage.getItem('alrpg_cl_state') || '{}'); } catch (e) { state = {}; }
+}
+
+function lsSave() {
+  try { localStorage.setItem('alrpg_cl_state', JSON.stringify(state)); } catch (e) {}
+}
+
+function applyRemote(data) {
+  // Merge remote state — remote wins on conflict
+  if (data.state && typeof data.state === 'object') {
+    state = { ...state, ...data.state };
+    lsSave();
+  }
+}
+
+function isChecked(cadence, id) {
+  const k = resetKey(cadence);
+  return !!(state[k] && state[k][id]);
+}
+
+function setChecked(cadence, id, val) {
+  const k = resetKey(cadence);
+  if (!state[k]) state[k] = {};
+  if (val) state[k][id] = true;
+  else delete state[k][id];
+  lsSave();
+  fsSave({ state, updatedAt: new Date().toISOString() });
+}
+
+// ═══════════════════════════════════════════════════════
+// COLLAPSE STATE
+// ═══════════════════════════════════════════════════════
+// On mobile: all collapsed by default. On desktop: all open.
+function isDesktop() { return window.innerWidth >= 768; }
+
+const openSections = new Set();
+
+function toggleSection(sec) {
+  const body = document.getElementById('body-' + sec);
+  const section = document.getElementById('sec-' + sec);
+  if (!body || !section) return;
+  if (openSections.has(sec)) {
+    openSections.delete(sec);
+    section.classList.remove('open');
+  } else {
+    openSections.add(sec);
+    section.classList.add('open');
+  }
+}
+
+function initSections() {
+  const secs = ['daily', 'weekly', 'monthly', 'quarterly'];
+  if (isDesktop()) {
+    secs.forEach(s => openSections.add(s));
+  } else {
+    // Auto-open daily by default on mobile
+    openSections.add('daily');
+  }
+  secs.forEach(s => {
+    const section = document.getElementById('sec-' + s);
+    if (section) section.classList.toggle('open', openSections.has(s));
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════
+const TOTALS = { daily: 4, weekly: 6, monthly: 5, quarterly: 7 };
+
+function renderAll() {
+  const cadences = ['daily', 'weekly', 'monthly', 'quarterly'];
+  let totalDone = 0, totalAll = 0;
+
+  cadences.forEach(cadence => {
+    const items = document.querySelectorAll(`.item[data-cadence="${cadence}"]`);
+    let done = 0;
+    items.forEach(item => {
+      const checked = isChecked(cadence, item.dataset.id);
+      item.classList.toggle('done', checked);
+      if (checked) done++;
+    });
+    const pill = document.getElementById('pill-' + cadence);
+    if (pill) pill.textContent = done + ' / ' + TOTALS[cadence];
+    const sec = document.getElementById('sec-' + cadence);
+    if (sec) {
+      const allDone = done === TOTALS[cadence] && done > 0;
+      sec.classList.toggle('all-done', allDone);
+    }
+    totalDone += done;
+    totalAll += TOTALS[cadence];
+  });
+
+  const tot = document.getElementById('hdr-total');
+  if (tot) tot.textContent = totalDone + ' / ' + totalAll + ' complete';
+}
+
+// ═══════════════════════════════════════════════════════
+// TOGGLE ITEM
+// ═══════════════════════════════════════════════════════
+function toggleItem(item) {
+  const cadence = item.dataset.cadence;
+  const id = item.dataset.id;
+  const nowChecked = !isChecked(cadence, id);
+  setChecked(cadence, id, nowChecked);
+  item.classList.toggle('done', nowChecked);
+
+  // Re-count for pill + all-done
+  const allItems = document.querySelectorAll(`.item[data-cadence="${cadence}"]`);
+  let done = 0;
+  allItems.forEach(i => { if (isChecked(i.dataset.cadence, i.dataset.id)) done++; });
+  const pill = document.getElementById('pill-' + cadence);
+  if (pill) pill.textContent = done + ' / ' + TOTALS[cadence];
+  const sec = document.getElementById('sec-' + cadence);
+  if (sec) sec.classList.toggle('all-done', done === TOTALS[cadence] && done > 0);
+
+  // Update total
+  let totalDone = 0;
+  ['daily', 'weekly', 'monthly', 'quarterly'].forEach(c => {
+    document.querySelectorAll(`.item[data-cadence="${c}"]`).forEach(i => {
+      if (isChecked(i.dataset.cadence, i.dataset.id)) totalDone++;
+    });
+  });
+  const tot = document.getElementById('hdr-total');
+  if (tot) tot.textContent = totalDone + ' / 22 complete';
+
+  // Completion notif
+  if (nowChecked && done === TOTALS[cadence]) showNotif(cadence.charAt(0).toUpperCase() + cadence.slice(1) + ' complete ✓', 'All tasks done for this period.');
+}
+
+// ═══════════════════════════════════════════════════════
+// QUARTERLY RESET
+// ═══════════════════════════════════════════════════════
+function resetQuarterly() {
+  if (!confirm('Reset all Quarterly / Arc items? This starts a new arc period.')) return;
+  const newKey = 'quarterly_arc_' + Date.now();
+  localStorage.setItem('alrpg_cl_q_key', newKey);
+  state[newKey] = {};
+  lsSave();
+  fsSave({ state, qKey: newKey, updatedAt: new Date().toISOString() });
+  renderAll();
+  showNotif('New Arc Started', 'Quarterly items have been reset.');
+}
+
+// ═══════════════════════════════════════════════════════
+// MIDNIGHT AUTO-RESET
+// ═══════════════════════════════════════════════════════
+function scheduleMidnight() {
+  const now = new Date();
+  const mn = new Date(now); mn.setHours(24, 0, 0, 500);
+  setTimeout(() => { renderAll(); scheduleMidnight(); }, mn - now);
+}
+
+// ═══════════════════════════════════════════════════════
+// NOTIFICATION
+// ═══════════════════════════════════════════════════════
+let notifTimer = null;
+function showNotif(main, sub) {
+  const existing = document.querySelector('.notif');
+  if (existing) existing.remove();
+  clearTimeout(notifTimer);
+  const el = document.createElement('div');
+  el.className = 'notif';
+  el.innerHTML = `<div class="notif-main">${main}</div><div class="notif-sub">${sub}</div>`;
+  document.body.appendChild(el);
+  notifTimer = setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 420); }, 2600);
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+async function init() {
+  const loSub = document.getElementById('lo-sub');
+
+  // Set date
+  document.getElementById('hdr-date').textContent =
+    new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' }).toUpperCase();
+
+  // Load local state
+  lsLoad();
+
+  // Try Firebase
+  if (loSub) loSub.textContent = 'Connecting…';
+  const online = await initFirebase();
+
+  if (online && db) {
+    try {
+      if (loSub) loSub.textContent = 'Syncing…';
+      const snap = await db.doc(FS_DOC).get();
+      if (snap.exists) {
+        const data = snap.data();
+        if (data) {
+          applyRemote(data);
+          // Restore quarterly key if present
+          if (data.qKey) localStorage.setItem('alrpg_cl_q_key', data.qKey);
+        }
+      }
+      setSync('synced');
+    } catch (e) {
+      console.warn('Remote pull failed:', e.message);
+      setSync('offline');
+    }
+  }
+
+  // Init sections (open/closed state)
+  initSections();
+
+  // Render
+  renderAll();
+
+  // Hide loading
+  document.getElementById('loading-overlay').style.display = 'none';
+
+  // Live listener
+  subscribeDoc();
+
+  // Midnight scheduler
+  scheduleMidnight();
+}
+
+// ═══════════════════════════════════════════════════════
+// EVENT WIRING
+// ═══════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+
+  // Section headers — toggle collapse
+  document.querySelectorAll('.sec-hdr').forEach(hdr => {
+    hdr.addEventListener('click', () => toggleSection(hdr.dataset.sec));
+  });
+
+  // Item checkboxes — delegation per section body
+  document.querySelectorAll('.sec-body').forEach(body => {
+    body.addEventListener('click', e => {
+      const item = e.target.closest('.item');
+      if (item && item.dataset.id) toggleItem(item);
+    });
+  });
+
+  // Quarterly reset button
+  const qBtn = document.getElementById('qr-reset-btn');
+  if (qBtn) qBtn.addEventListener('click', e => { e.stopPropagation(); resetQuarterly(); });
+
+  // Start
+  init();
+});
+
+// Service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/Sovereign-Worksheet-Checklist/sw.js', {scope: '/Sovereign-Worksheet-Checklist/'}).catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
